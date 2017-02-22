@@ -48,10 +48,7 @@ void VarDecl::Check(){
         Node::symtab->remove(*sym);
     }
     sym = new Symbol(this->GetIdentifier()->GetName(), this, E_VarDecl);
-    Node::symtab->insert(*new_sym);
-    
-    
-    
+    Node::symtab->insert(*sym);
     
 }
 

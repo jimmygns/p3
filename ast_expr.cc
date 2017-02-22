@@ -12,6 +12,9 @@
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
+void IntConstant::Check() {
+    this->type = Type::intType;
+}
 void IntConstant::PrintChildren(int indentLevel) { 
     printf("%d", value);
 }
@@ -19,12 +22,18 @@ void IntConstant::PrintChildren(int indentLevel) {
 FloatConstant::FloatConstant(yyltype loc, double val) : Expr(loc) {
     value = val;
 }
+void FloatConstant::Check() {
+    this->type = Type::floatType;
+}
 void FloatConstant::PrintChildren(int indentLevel) { 
     printf("%g", value);
 }
 
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
     value = val;
+}
+void BoolConstant::Check() {
+    this->type = Type::boolType;
 }
 void BoolConstant::PrintChildren(int indentLevel) { 
     printf("%s", value ? "true" : "false");
@@ -34,7 +43,9 @@ VarExpr::VarExpr(yyltype loc, Identifier *ident) : Expr(loc) {
     Assert(ident != NULL);
     this->id = ident;
 }
-
+void VarExpr::Check() {
+    k
+}
 void VarExpr::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
 }
@@ -43,7 +54,9 @@ Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
 }
-
+void Operator::Check() {
+    //TODO
+}
 void Operator::PrintChildren(int indentLevel) {
     printf("%s",tokenString);
 }
@@ -74,7 +87,9 @@ CompoundExpr::CompoundExpr(Expr *l, Operator *o)
     (left=l)->SetParent(this);
     (op=o)->SetParent(this);
 }
-
+void CompoundExpr::Check() {
+    //TODO
+}
 void CompoundExpr::PrintChildren(int indentLevel) {
    if (left) left->Print(indentLevel+1);
    op->Print(indentLevel+1);
@@ -88,7 +103,9 @@ ConditionalExpr::ConditionalExpr(Expr *c, Expr *t, Expr *f)
     (trueExpr=t)->SetParent(this);
     (falseExpr=f)->SetParent(this);
 }
-
+void ConditionalExpr::Check() {
+    //TODO
+}
 void ConditionalExpr::PrintChildren(int indentLevel) {
     cond->Print(indentLevel+1, "(cond) ");
     trueExpr->Print(indentLevel+1, "(true) ");
@@ -98,7 +115,9 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
 }
-
+void ArrayAccess::Check() {
+    //TODO
+}
 void ArrayAccess::PrintChildren(int indentLevel) {
     base->Print(indentLevel+1);
     subscript->Print(indentLevel+1, "(subscript) ");
@@ -111,8 +130,9 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     if (base) base->SetParent(this); 
     (field=f)->SetParent(this);
 }
-
-
+void FieldAccess::Check() {
+    //TODO
+}
 void FieldAccess::PrintChildren(int indentLevel) {
     if (base) base->Print(indentLevel+1);
     field->Print(indentLevel+1);
@@ -125,7 +145,10 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     (field=f)->SetParent(this);
     (actuals=a)->SetParentAll(this);
 }
-
+void Call::Check() {
+    //TODO
+    //LessFormals, ExtraFormals, FormalsTypeMismatch, NotAFunction, 
+}
 void Call::PrintChildren(int indentLevel) {
    if (base) base->Print(indentLevel+1);
    if (field) field->Print(indentLevel+1);
