@@ -53,6 +53,7 @@ class Node  {
     Node *parent;
 
   public:
+    static SymbolTable *symtab; 
     Node(yyltype loc);
     Node();
     virtual ~Node() {}

@@ -33,6 +33,7 @@ void Program::Check() {
     if ( decls->NumElements() > 0 ) {
       for ( int i = 0; i < decls->NumElements(); ++i ) {
         Decl *d = decls->Nth(i);
+        d->Check();
         /* !!! YOUR CODE HERE !!!
          * Basically you have to make sure that each declaration is 
          * semantically correct.
@@ -52,6 +53,23 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
+void StmtBlock::Check(){
+    if ( decls->NumElements() > 0 ) {
+      for ( int i = 0; i < decls->NumElements(); ++i ) {
+        Decl *d = decls->Nth(i);
+        d->Check();
+      }
+    }
+
+    if ( stmts->NumElements() > 0 ) {
+      for ( int i = 0; i < stmts->NumElements(); ++i ) {
+        Stmt *st = stmts->Nth(i);
+        st->Check();
+      }
+    }
+
+}
+
 DeclStmt::DeclStmt(Decl *d) {
     Assert(d != NULL);
     (decl=d)->SetParent(this);
@@ -59,6 +77,10 @@ DeclStmt::DeclStmt(Decl *d) {
 
 void DeclStmt::PrintChildren(int indentLevel) {
     decl->Print(indentLevel+1);
+}
+
+void DeclStmt::Check(){
+    this->GetDecl()->Check();
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 

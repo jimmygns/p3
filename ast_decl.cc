@@ -38,6 +38,21 @@ void VarDecl::PrintChildren(int indentLevel) {
    if (type) type->Print(indentLevel+1);
    if (id) id->Print(indentLevel+1);
    if (assignTo) assignTo->Print(indentLevel+1, "(initializer) ");
+
+}
+
+void VarDecl::Check(){
+    Symbol *sym = Node::symtab->find(this->GetIdentifier()->GetName());
+    if(sym){
+        ReportError::DeclConflict(this, sym->decl);
+        Node::symtab->remove(*sym);
+    }
+    sym = new Symbol(this->GetIdentifier()->GetName(), this, E_VarDecl);
+    Node::symtab->insert(*new_sym);
+    
+    
+    
+    
 }
 
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
@@ -65,5 +80,29 @@ void FnDecl::PrintChildren(int indentLevel) {
     if (id) id->Print(indentLevel+1);
     if (formals) formals->PrintAll(indentLevel+1, "(formals) ");
     if (body) body->Print(indentLevel+1, "(body) ");
+}
+
+void FnDecl::Check(){
+    Symbol *sym = Node::symtab->find(this->GetIdentifier()->GetName());
+    if(sym){
+        ReportError::DeclConflict(this, sym->decl);
+        Node::symtab->remove(*sym);
+    }
+    
+    sym = new Symbol(this->GetIdentifier()->GetName(), this, E_FunctionDecl);
+    Node::symtab->insert(*sym);
+    Node::symtab->push();
+    if ( this->GetFormals()->NumElements() > 0 ) {
+        for ( int i = 0; i < this->GetFormals()->NumElements(); ++i ) {
+            VarDecl *vd = this->GetFormals()->Nth(i);
+            vd->Check();
+        }
+    }
+    StmtBlock* body_stmt = dynamic_cast<StmtBlock *>(this->GetBody());
+    body_stmt->Check();
+
+    
+    
+
 }
 

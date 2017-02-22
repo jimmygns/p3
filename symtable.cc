@@ -9,6 +9,10 @@ using namespace std;
 ScopedTable::ScopedTable(){
 }
 
+ScopedTable::~ScopedTable(){
+	this->symbols.clear();
+}
+
 void ScopedTable::insert(Symbol &sym){
 
 	this->symbols.insert(pair<char*, Symbol>(sym.name, sym));
@@ -21,8 +25,22 @@ void ScopedTable::remove(Symbol &sym){
 }
 
 Symbol *ScopedTable::find(const char *name){
+	SymbolIterator it = this->symbols.find(name);
+	if (it == this->symbols.end()){
+		return NULL;
+	}
 
 	return &(this->symbols.find(name)->second);
+}
+
+SymbolTable::SymbolTable(){
+
+}
+
+SymbolTable::~SymbolTable(){
+	for(vector<ScopedTable*>::iterator it = this->tables.begin(); it != this->tables.end(); ++it){
+		delete *it;
+	}
 }
 
 void SymbolTable::push(){

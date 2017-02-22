@@ -40,6 +40,8 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
+
+     virtual void Check();
 };
 
 class StmtBlock : public Stmt 
@@ -52,6 +54,8 @@ class StmtBlock : public Stmt
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     const char *GetPrintNameForNode() { return "StmtBlock"; }
     void PrintChildren(int indentLevel);
+
+    virtual void Check();
 };
 
 class DeclStmt: public Stmt 
@@ -63,6 +67,8 @@ class DeclStmt: public Stmt
     DeclStmt(Decl *d);
     const char *GetPrintNameForNode() { return "DeclStmt"; }
     void PrintChildren(int indentLevel);
+
+    Decl* GetDecl(){return decl;}
 
 };
   
