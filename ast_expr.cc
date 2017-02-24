@@ -44,11 +44,21 @@ VarExpr::VarExpr(yyltype loc, Identifier *ident) : Expr(loc) {
     this->id = ident;
 }
 void VarExpr::Check() {
+    this->CheckExpr();
+}
+
+Type *VarExpr::CheckExpr() {
     Symbol *sym = Node::symtab->find(this->GetIdentifier()->GetName());
     if(!sym){
         ReportError::IdentifierNotDeclared(this->GetIdentifier(), LookingForVariable);
+        return Type::errorType;
     }
+    return new NamedType(this->GetIdentifier());
+
+    
 }
+
+
 void VarExpr::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
 }
@@ -212,7 +222,7 @@ Type *LogicalExpr::CheckExpr(){
         }
     }
 
-    if (r_type->IsConvertibleTo(Type::boolType))
+    if (r_type->IsEquivalentTo(Type::boolType))
     {
         return Type::boolType;
     }
@@ -283,7 +293,10 @@ void ConditionalExpr::Check() {
     trueExpr->Check();
     falseExpr->Check();
 
-    if(!cond_type->IsConvertibleTo(Type::boolType)){
+    if (cond_type->isError())
+        return;
+
+    if(!cond_type->IsEquivalentTo(Type::boolType)){
         ReportError::TestNotBoolean(cond);
     }
 }
@@ -304,7 +317,11 @@ Type *ArrayAccess::CheckExpr() {
         ReportError::NotAnArray(b->GetIdentifier());
         return Type::errorType;
     }
-    ArrayType *b_type = dynamic_cast<ArrayType*>(base->CheckExpr());
+    Tyep * type = base->CheckExpr();
+    if(type->isError()){
+        return Type::errorType;
+    }
+    ArrayType *b_type = dynamic_cast<ArrayType*>(type);
     //subscript->Check();
 
     if(!b_type){
@@ -326,8 +343,68 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 void FieldAccess::Check() {
-    //TODO
+    this->CheckExpr();
 }
+
+Type *FieldAccess::CheckExpr(){
+    if(base){
+        Type *type = base->CheckExpr();
+        if(type->isError()){
+            return Type::errorType;
+        }
+        if (!type->IsVector) {
+            ReportError::InaccessibleSwizzle(field, base);
+            return Type::errorType;
+        }
+        char *name = field->GetName();
+        int len = strlen(name);
+        bool has_z = false;
+        bool has_w = false;
+
+        for(int i=0; i<len; i++){
+            char c = name[i];
+            if(c!='x'||c!='y'||c!='z'||c!='w'){
+                ReportError::InvalidSwizzle(field, base);
+                return Type::errorType;
+            }
+            if(c=='z')
+                has_z = true;
+            if(c=='w')
+                has_w = true;
+        }
+
+        if(type->IsEquivalentTo(Type::vec2Type)){
+            if(has_w||has_z){
+                ReportError::SwizzleOutOfBound(field, base);
+                return Type::errorType;
+            }
+        }
+        if (type->IsEquivalentTo(Type::vec3Type)){
+            if(has_w){
+                ReportError::SwizzleOutOfBound(field, base);
+                return Type::errorType;
+            }
+        }
+        if(len>4){
+            ReportError::OversizedVector(field, base);
+            return Type:errorType;
+        }
+
+        if(len==1)
+            return Type::floatType;
+        if(len==2)
+            return Type::vec2Type;
+        if(len==3)
+            return Type::vec3Type;
+        return Type::vec4Type;
+
+
+        
+    }
+    
+}
+
+
 void FieldAccess::PrintChildren(int indentLevel) {
     if (base) base->Print(indentLevel+1);
     field->Print(indentLevel+1);
