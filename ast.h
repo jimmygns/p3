@@ -54,6 +54,9 @@ class Node  {
 
   public:
     static SymbolTable *symtab; 
+    static bool isFnDecl;
+
+
     Node(yyltype loc);
     Node();
     virtual ~Node() {}

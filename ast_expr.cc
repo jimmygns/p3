@@ -44,7 +44,10 @@ VarExpr::VarExpr(yyltype loc, Identifier *ident) : Expr(loc) {
     this->id = ident;
 }
 void VarExpr::Check() {
-    k
+    Symbol *sym = Node::symtab->find(this->GetIdentifier()->GetName());
+    if(!sym){
+        ReportError::IdentifierNotDeclared(this->GetIdentifier(), LookingForVariable);
+    }
 }
 void VarExpr::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
@@ -54,9 +57,7 @@ Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
     Assert(tok != NULL);
     strncpy(tokenString, tok, sizeof(tokenString));
 }
-void Operator::Check() {
-    //TODO
-}
+
 void Operator::PrintChildren(int indentLevel) {
     printf("%s",tokenString);
 }
@@ -87,13 +88,187 @@ CompoundExpr::CompoundExpr(Expr *l, Operator *o)
     (left=l)->SetParent(this);
     (op=o)->SetParent(this);
 }
-void CompoundExpr::Check() {
-    //TODO
-}
+
+
 void CompoundExpr::PrintChildren(int indentLevel) {
    if (left) left->Print(indentLevel+1);
    op->Print(indentLevel+1);
    if (right) right->Print(indentLevel+1);
+}
+
+Type* ArithmeticExpr::CheckExpr(){
+    bool is_unary = false;
+    Type* l_type = NULL;
+    Type* r_type = NULL;
+    if(left){
+        l_type = left->CheckExpr();
+        r_type = right->CheckExpr();
+        if(l_type->isError() || r_type->isError()){
+            return Type::errorType;
+        }
+
+        if (!l_type->IsEquivalentTo(r_type)){
+            ReportError::IncompatibleOperands(op, l_type, r_type);
+            return Type::errorType;
+        }
+    }
+    else{
+        is_unary = true;
+        r_type = right->CheckExpr();
+        if(r_type->isError()){
+            return Type::errorType;
+        }
+    }
+
+    if (r_type->IsNumeric()||r_type->IsMatrix()||r_type->IsVector())
+    {
+        return r_type;
+    }
+    else{
+        if(is_unary){
+            ReportError::IncompatibleOperand(op, r_type);
+        }
+        else{
+            ReportError::IncompatibleOperands(op, l_type, r_type);
+        }
+        
+        return Type::errorType;
+    }
+}
+
+void ArithmeticExpr::Check(){
+    this->CheckExpr();
+}
+
+Type *RelationalExpr::CheckExpr(){
+    Type *l_type = left->CheckExpr();
+    Type *r_type = right->CheckExpr();
+
+    if(l_type->isError() || r_type->isError()){
+        return Type::errorType;
+    }
+
+    if (!l_type->IsEquivalentTo(r_type)){
+        ReportError::IncompatibleOperands(op, l_type, r_type);
+        return Type::errorType;
+    }
+    if (r_type->IsNumeric())
+    {
+        return Type::boolType;
+    }
+    else{
+        ReportError::IncompatibleOperands(op, l_type, r_type);
+        return Type::errorType;
+    }
+
+}
+
+void RelationalExpr::Check(){
+    this->CheckExpr();
+}
+
+Type *EqualityExpr::CheckExpr(){
+    Type *l_type = left->CheckExpr();
+    Type *r_type = right->CheckExpr();
+
+    if(l_type->isError() || r_type->isError()){
+        return Type::errorType;
+    }
+
+    if (!l_type->IsEquivalentTo(r_type)){
+        ReportError::IncompatibleOperands(op, l_type, r_type);
+        return Type::errorType;
+    }
+    
+    return Type::boolType;
+    
+}
+
+void EqualityExpr::Check(){
+    this->CheckExpr();
+}
+
+Type *LogicalExpr::CheckExpr(){
+    bool is_unary = false;
+    Type* l_type = NULL;
+    Type* r_type = NULL;
+    if(left){
+        l_type = left->CheckExpr();
+        r_type = right->CheckExpr();
+        if(l_type->isError() || r_type->isError()){
+            return Type::errorType;
+        }
+
+        if (!l_type->IsEquivalentTo(r_type)){
+            ReportError::IncompatibleOperands(op, l_type, r_type);
+            return Type::errorType;
+        }
+    }
+    else{
+        is_unary = true;
+        r_type = right->CheckExpr();
+        if(r_type->isError()){
+            return Type::errorType;
+        }
+    }
+
+    if (r_type->IsConvertibleTo(Type::boolType))
+    {
+        return Type::boolType;
+    }
+    else{
+        if(is_unary){
+            ReportError::IncompatibleOperand(op, r_type);
+        }
+        else{
+            ReportError::IncompatibleOperands(op, l_type, r_type);
+        }
+        
+        return Type::errorType;
+    }
+}
+
+void LogicalExpr::Check(){
+    this->CheckExpr();
+}
+
+Type *AssignExpr::CheckExpr(){
+    Type *l_type = left->CheckExpr();
+    Type *r_type = right->CheckExpr();
+
+    if(l_type->isError() || r_type->isError()){
+        return Type::errorType;
+    }
+
+    if (!l_type->IsEquivalentTo(r_type)){
+        ReportError::IncompatibleOperands(op, l_type, r_type);
+        return Type::errorType;
+    }
+    
+    return r_type;
+}
+
+void AssignExpr::Check(){
+    this->CheckExpr();
+}
+
+Type *PostfixExpr::CheckExpr(){
+    r_type = right->CheckExpr();
+    if(r_type->isError()){
+        return Type::errorType;
+    }
+    if(r_type->IsNumeric()||r_type->IsMatrix()||r_type->IsVector()){
+        return r_type;
+    }
+    else{
+        ReportError::IncompatibleOperand(op, r_type);
+        return Type::errorType;
+    }
+
+}
+
+void PostfixExpr::Check(){
+    this->CheckExpr();
 }
    
 ConditionalExpr::ConditionalExpr(Expr *c, Expr *t, Expr *f)
@@ -104,8 +279,16 @@ ConditionalExpr::ConditionalExpr(Expr *c, Expr *t, Expr *f)
     (falseExpr=f)->SetParent(this);
 }
 void ConditionalExpr::Check() {
-    //TODO
+    Type *cond_type = cond->CheckExpr();
+    trueExpr->Check();
+    falseExpr->Check();
+
+    if(!cond_type->IsConvertibleTo(Type::boolType)){
+        ReportError::TestNotBoolean(cond);
+    }
 }
+
+
 void ConditionalExpr::PrintChildren(int indentLevel) {
     cond->Print(indentLevel+1, "(cond) ");
     trueExpr->Print(indentLevel+1, "(true) ");
@@ -115,8 +298,20 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
 }
-void ArrayAccess::Check() {
-    //TODO
+Type *ArrayAccess::CheckExpr() {
+    VarExpr * b = dynamic_cast<VarExpr*> base;
+    if(!b){
+        ReportError::NotAnArray(b->GetIdentifier());
+        return Type::errorType;
+    }
+    ArrayType *b_type = dynamic_cast<ArrayType*>(base->CheckExpr());
+    //subscript->Check();
+
+    if(!b_type){
+        ReportError::NotAnArray(b->GetIdentifier());
+        return Type::errorType;
+    }
+    return b_type->GetElemType();
 }
 void ArrayAccess::PrintChildren(int indentLevel) {
     base->Print(indentLevel+1);

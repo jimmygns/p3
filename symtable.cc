@@ -13,6 +13,10 @@ ScopedTable::~ScopedTable(){
 	this->symbols.clear();
 }
 
+void ScopedTable::addReturnType(Type *t){
+	this->type = t;
+}
+
 void ScopedTable::insert(Symbol &sym){
 
 	this->symbols.insert(pair<char*, Symbol>(sym.name, sym));
@@ -42,6 +46,17 @@ SymbolTable::~SymbolTable(){
 		delete *it;
 	}
 }
+
+void SymbolTable::setReturnType(Type *t){
+	this->tables.back()->addReturnType(t);
+}
+
+
+Type *SymbolTable::getType(){
+	return this->tables.back()->getType();
+}
+
+
 
 void SymbolTable::push(){
 	this->tables.push_back(new ScopedTable());

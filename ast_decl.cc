@@ -89,6 +89,8 @@ void FnDecl::Check(){
     sym = new Symbol(this->GetIdentifier()->GetName(), this, E_FunctionDecl);
     Node::symtab->insert(*sym);
     Node::symtab->push();
+    Node::symtab->setReturnType(this->GetType());
+    Node::isFnDecl = true;
     if ( this->GetFormals()->NumElements() > 0 ) {
         for ( int i = 0; i < this->GetFormals()->NumElements(); ++i ) {
             VarDecl *vd = this->GetFormals()->Nth(i);
@@ -97,6 +99,7 @@ void FnDecl::Check(){
     }
     StmtBlock* body_stmt = dynamic_cast<StmtBlock *>(this->GetBody());
     body_stmt->Check();
+    Node::symtab->pop();
 
     
     

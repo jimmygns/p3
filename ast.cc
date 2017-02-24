@@ -11,6 +11,7 @@
 
 
 SymbolTable *Node::symtab = new SymbolTable;
+bool Node::isFnDecl = false;
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);

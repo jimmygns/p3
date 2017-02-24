@@ -54,19 +54,30 @@ void StmtBlock::PrintChildren(int indentLevel) {
 }
 
 void StmtBlock::Check(){
-    if ( decls->NumElements() > 0 ) {
-      for ( int i = 0; i < decls->NumElements(); ++i ) {
-        Decl *d = decls->Nth(i);
-        d->Check();
-      }
-    }
+  bool inFunction = true;
+  if(!Node::isFnDecl){
+    Node::symtab->push();
+    Node::isFnDecl = false;
+    isFunction = false;
+  }
 
-    if ( stmts->NumElements() > 0 ) {
-      for ( int i = 0; i < stmts->NumElements(); ++i ) {
-        Stmt *st = stmts->Nth(i);
-        st->Check();
-      }
+  if ( decls->NumElements() > 0 ) {
+    for ( int i = 0; i < decls->NumElements(); ++i ) {
+      Decl *d = decls->Nth(i);
+      d->Check();
     }
+  }
+
+  if ( stmts->NumElements() > 0 ) {
+    for ( int i = 0; i < stmts->NumElements(); ++i ) {
+      Stmt *st = stmts->Nth(i);
+      st->Check();
+    }
+  }
+
+  if(!isFunction){
+    Node::symtab->pop();
+  }
 
 }
 

@@ -23,6 +23,7 @@ using namespace std;
 
 class Decl;
 class Stmt;
+class Type;
 
 enum EntryKind {
   E_FunctionDecl,
@@ -52,6 +53,8 @@ typedef map<const char *, Symbol, lessStr>::iterator SymbolIterator;
 
 class ScopedTable {
   map<const char *, Symbol, lessStr> symbols;
+  Type *type;
+  
 
   public:
     ScopedTable();
@@ -59,6 +62,11 @@ class ScopedTable {
 
     void insert(Symbol &sym); 
     void remove(Symbol &sym);
+    void addReturnType(Type* type);
+    
+
+    Type *getType(){ return type;}
+    
     Symbol *find(const char *name);
 };
    
@@ -74,6 +82,10 @@ class SymbolTable {
 
     void insert(Symbol &sym);
     void remove(Symbol &sym);
+    void setReturnType(Type* type);
+
+    Type* getType();
+    
     Symbol *find(const char *name);
 
 };    

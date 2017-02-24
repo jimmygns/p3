@@ -26,6 +26,10 @@ class Expr : public Stmt
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
 
+    virtual Type* CheckExpr();
+
+
+
     friend std::ostream& operator<< (std::ostream& stream, Expr * expr) {
         return stream << expr->GetPrintNameForNode();
     }
@@ -90,6 +94,8 @@ class VarExpr : public Expr
     const char *GetPrintNameForNode() { return "VarExpr"; }
     void PrintChildren(int indentLevel);
     Identifier *GetIdentifier() {return id;}
+
+    virtual void Check();
 };
 
 class Operator : public Node 
@@ -116,6 +122,7 @@ class CompoundExpr : public Expr
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
     CompoundExpr(Expr *lhs, Operator *op);             // for unary
     void PrintChildren(int indentLevel);
+
 };
 
 class ArithmeticExpr : public CompoundExpr 
@@ -124,6 +131,11 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
+
 };
 
 class RelationalExpr : public CompoundExpr 
@@ -131,6 +143,10 @@ class RelationalExpr : public CompoundExpr
   public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "RelationalExpr"; }
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
 };
 
 class EqualityExpr : public CompoundExpr 
@@ -138,6 +154,10 @@ class EqualityExpr : public CompoundExpr
   public:
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
 };
 
 class LogicalExpr : public CompoundExpr 
@@ -146,6 +166,10 @@ class LogicalExpr : public CompoundExpr
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
 };
 
 class AssignExpr : public CompoundExpr 
@@ -153,6 +177,10 @@ class AssignExpr : public CompoundExpr
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
 };
 
 class PostfixExpr : public CompoundExpr
@@ -160,6 +188,10 @@ class PostfixExpr : public CompoundExpr
   public:
     PostfixExpr(Expr *lhs, Operator *op) : CompoundExpr(lhs,op) {}
     const char *GetPrintNameForNode() { return "PostfixExpr"; }
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
 
 };
 
@@ -171,6 +203,8 @@ class ConditionalExpr : public Expr
     ConditionalExpr(Expr *c, Expr *t, Expr *f);
     void PrintChildren(int indentLevel);
     const char *GetPrintNameForNode() { return "ConditionalExpr"; }
+
+    virtual void Check();
 };
 
 class LValue : public Expr 
@@ -188,6 +222,10 @@ class ArrayAccess : public LValue
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     const char *GetPrintNameForNode() { return "ArrayAccess"; }
     void PrintChildren(int indentLevel);
+
+    virtual void Check();
+
+    virtual Type *CheckExpr();
 };
 
 /* Note that field access is used both for qualified names
