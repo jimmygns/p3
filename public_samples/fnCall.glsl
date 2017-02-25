@@ -4,6 +4,8 @@ int foo()
 }
 int main()
 {
+
   int x = foo();
+  x();
   return foo(1);
 }

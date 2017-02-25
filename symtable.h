@@ -68,6 +68,7 @@ class ScopedTable {
     Type *getType(){ return type;}
     
     Symbol *find(const char *name);
+
 };
    
 class SymbolTable {

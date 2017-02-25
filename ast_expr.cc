@@ -12,9 +12,7 @@
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
-void IntConstant::Check() {
-    this->type = Type::intType;
-}
+
 void IntConstant::PrintChildren(int indentLevel) { 
     printf("%d", value);
 }
@@ -22,9 +20,7 @@ void IntConstant::PrintChildren(int indentLevel) {
 FloatConstant::FloatConstant(yyltype loc, double val) : Expr(loc) {
     value = val;
 }
-void FloatConstant::Check() {
-    this->type = Type::floatType;
-}
+
 void FloatConstant::PrintChildren(int indentLevel) { 
     printf("%g", value);
 }
@@ -32,9 +28,7 @@ void FloatConstant::PrintChildren(int indentLevel) {
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
     value = val;
 }
-void BoolConstant::Check() {
-    this->type = Type::boolType;
-}
+
 void BoolConstant::PrintChildren(int indentLevel) { 
     printf("%s", value ? "true" : "false");
 }
@@ -113,7 +107,7 @@ Type* ArithmeticExpr::CheckExpr(){
     if(left){
         l_type = left->CheckExpr();
         r_type = right->CheckExpr();
-        if(l_type->isError() || r_type->isError()){
+        if(l_type->IsError() || r_type->IsError()){
             return Type::errorType;
         }
 
@@ -125,7 +119,7 @@ Type* ArithmeticExpr::CheckExpr(){
     else{
         is_unary = true;
         r_type = right->CheckExpr();
-        if(r_type->isError()){
+        if(r_type->IsError()){
             return Type::errorType;
         }
     }
@@ -154,7 +148,7 @@ Type *RelationalExpr::CheckExpr(){
     Type *l_type = left->CheckExpr();
     Type *r_type = right->CheckExpr();
 
-    if(l_type->isError() || r_type->isError()){
+    if(l_type->IsError() || r_type->IsError()){
         return Type::errorType;
     }
 
@@ -181,7 +175,7 @@ Type *EqualityExpr::CheckExpr(){
     Type *l_type = left->CheckExpr();
     Type *r_type = right->CheckExpr();
 
-    if(l_type->isError() || r_type->isError()){
+    if(l_type->IsError() || r_type->IsError()){
         return Type::errorType;
     }
 
@@ -205,7 +199,7 @@ Type *LogicalExpr::CheckExpr(){
     if(left){
         l_type = left->CheckExpr();
         r_type = right->CheckExpr();
-        if(l_type->isError() || r_type->isError()){
+        if(l_type->IsError() || r_type->IsError()){
             return Type::errorType;
         }
 
@@ -217,7 +211,7 @@ Type *LogicalExpr::CheckExpr(){
     else{
         is_unary = true;
         r_type = right->CheckExpr();
-        if(r_type->isError()){
+        if(r_type->IsError()){
             return Type::errorType;
         }
     }
@@ -246,7 +240,7 @@ Type *AssignExpr::CheckExpr(){
     Type *l_type = left->CheckExpr();
     Type *r_type = right->CheckExpr();
 
-    if(l_type->isError() || r_type->isError()){
+    if(l_type->IsError() || r_type->IsError()){
         return Type::errorType;
     }
 
@@ -263,8 +257,8 @@ void AssignExpr::Check(){
 }
 
 Type *PostfixExpr::CheckExpr(){
-    r_type = right->CheckExpr();
-    if(r_type->isError()){
+    Type *r_type = right->CheckExpr();
+    if(r_type->IsError()){
         return Type::errorType;
     }
     if(r_type->IsNumeric()||r_type->IsMatrix()||r_type->IsVector()){
@@ -293,7 +287,7 @@ void ConditionalExpr::Check() {
     trueExpr->Check();
     falseExpr->Check();
 
-    if (cond_type->isError())
+    if (cond_type->IsError())
         return;
 
     if(!cond_type->IsEquivalentTo(Type::boolType)){
@@ -312,13 +306,13 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 Type *ArrayAccess::CheckExpr() {
-    VarExpr * b = dynamic_cast<VarExpr*> base;
+    VarExpr * b = dynamic_cast<VarExpr*> (base);
     if(!b){
         ReportError::NotAnArray(b->GetIdentifier());
         return Type::errorType;
     }
-    Tyep * type = base->CheckExpr();
-    if(type->isError()){
+    Type * type = base->CheckExpr();
+    if(type->IsError()){
         return Type::errorType;
     }
     ArrayType *b_type = dynamic_cast<ArrayType*>(type);
@@ -347,12 +341,12 @@ void FieldAccess::Check() {
 }
 
 Type *FieldAccess::CheckExpr(){
-    if(base){
+    
         Type *type = base->CheckExpr();
-        if(type->isError()){
+        if(type->IsError()){
             return Type::errorType;
         }
-        if (!type->IsVector) {
+        if (!type->IsVector()) {
             ReportError::InaccessibleSwizzle(field, base);
             return Type::errorType;
         }
@@ -387,7 +381,7 @@ Type *FieldAccess::CheckExpr(){
         }
         if(len>4){
             ReportError::OversizedVector(field, base);
-            return Type:errorType;
+            return Type::errorType;
         }
 
         if(len==1)
@@ -400,7 +394,7 @@ Type *FieldAccess::CheckExpr(){
 
 
         
-    }
+    
     
 }
 
@@ -417,10 +411,55 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     (field=f)->SetParent(this);
     (actuals=a)->SetParentAll(this);
 }
-void Call::Check() {
-    //TODO
-    //LessFormals, ExtraFormals, FormalsTypeMismatch, NotAFunction, 
+Type* Call::CheckExpr() {
+    Symbol *sym = Node::symtab->find(field->GetName());
+    if(!sym){
+        ReportError::IdentifierNotDeclared(field, LookingForFunction);
+        return Type::errorType;
+    }
+
+   
+    if(sym->kind != E_FunctionDecl) {
+        ReportError::NotAFunction(field);
+        return Type::errorType;
+    }
+
+    FnDecl* fndecl = dynamic_cast<FnDecl*>(sym->decl);
+
+
+    if(fndecl->GetFormals()->NumElements() > actuals->NumElements()) {
+        ReportError::LessFormals(field, fndecl->GetFormals()->NumElements(), actuals->NumElements());
+        return Type::errorType;
+    }
+
+    else if(fndecl->GetFormals()->NumElements() < actuals->NumElements()) {
+        ReportError::ExtraFormals(field, fndecl->GetFormals()->NumElements(), actuals->NumElements());
+        return Type::errorType;
+    }
+
+    else{
+        for(int i = 0; i < actuals->NumElements(); i++) {
+
+            Type *actual = actuals->Nth(i)->CheckExpr();
+	    if(actual->IsError()){
+		return Type::errorType;
+	    }
+
+            Type *expected = fndecl->GetFormals()->Nth(i)->GetType();
+
+            if(!actual->IsEquivalentTo(expected)) {
+                ReportError::FormalsTypeMismatch(field, i+1, expected, actual);
+                return Type::errorType;
+            }
+        }
+    }
+    return fndecl->GetType();
 }
+
+void Call::Check() {
+    this->CheckExpr();
+}
+
 void Call::PrintChildren(int indentLevel) {
    if (base) base->Print(indentLevel+1);
    if (field) field->Print(indentLevel+1);

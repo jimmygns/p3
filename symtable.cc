@@ -77,7 +77,21 @@ void SymbolTable::remove(Symbol &sym){
 }
 
 Symbol *SymbolTable::find(const char *name){
-	return this->tables.back()->find(name);
+	Symbol *sym = this->tables.back()->find(name);
+	if(sym){
+	    return sym;
+	}
+	for(vector<ScopedTable*>::iterator it = this->tables.begin(); it != this->tables.end(); ++it){
+	    sym = *it->find(name);
+	    if(sym){
+		sym->someinfo=1;
+		return sym;
+	    }
+		
+	}
+
+
+	return NULL;
 
 }
 

@@ -54,7 +54,7 @@ void StmtBlock::PrintChildren(int indentLevel) {
 }
 
 void StmtBlock::Check(){
-  bool inFunction = true;
+  bool isFunction = true;
   if(!Node::isFnDecl){
     Node::symtab->push();
     Node::isFnDecl = false;
@@ -100,6 +100,24 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     (body=b)->SetParent(this);
 }
 
+void ForStmt::Check() {
+    Node::symtab->push();
+
+    init->Check();
+    test->Check();
+
+   
+    if(step != NULL) {
+        step->Check();
+    }
+
+    body->Check();
+
+    Node::symtab->pop();
+}
+
+
+
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
     Assert(i != NULL && t != NULL && b != NULL);
     (init=i)->SetParent(this);
@@ -121,6 +139,15 @@ void WhileStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
+void WhileStmt::Check() {
+    Node::symtab->push()
+    
+    test->Check();
+
+    body->Check();
+
+    Node::symtab->pop();
+}
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
@@ -133,6 +160,9 @@ void IfStmt::PrintChildren(int indentLevel) {
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
 }
 
+void IfStmt::Check() {
+    //TODO
+}
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
     expr = e;
@@ -142,6 +172,10 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
 void ReturnStmt::PrintChildren(int indentLevel) {
     if ( expr ) 
       expr->Print(indentLevel+1);
+}
+
+void ReturnStmt::Check() {
+    //TODO
 }
 
 SwitchLabel::SwitchLabel(Expr *l, Stmt *s) {
