@@ -357,33 +357,28 @@ Type *FieldAccess::CheckExpr(){
             return Type::errorType;
         }
         char *name = field->GetName();
-        int len = strlen(name);
+        const int len = strlen(name);
         bool has_z = false;
         bool has_w = false;
 
         for(int i=0; i<len; i++){
             char c = name[i];
-            if(c!='x'||c!='y'||c!='z'||c!='w'){
+            if(c!='x'&&c!='y'&&c!='z'&&c!='w'){
                 ReportError::InvalidSwizzle(field, base);
                 return Type::errorType;
             }
-            if(c=='z')
-                has_z = true;
-            if(c=='w')
-                has_w = true;
-        }
-
-        if(type->IsEquivalentTo(Type::vec2Type)){
-            if(has_w||has_z){
-                ReportError::SwizzleOutOfBound(field, base);
-                return Type::errorType;
-            }
-        }
-        if (type->IsEquivalentTo(Type::vec3Type)){
-            if(has_w){
-                ReportError::SwizzleOutOfBound(field, base);
-                return Type::errorType;
-            }
+            if(c!='x' && c!='y' && (type->IsEquivalentTo(Type::vec2Type))) {
+                ReportError::SwizzleOutOfBound(field,base);
+		return Type::errorType;
+	    }
+            if(c!='x' && c!='y' && c!='z' && (type->IsEquivalentTo(Type::vec3Type))) {
+                ReportError::SwizzleOutOfBound(field,base);
+		return Type::errorType;
+	    }
+	    if(c!='x' && c!='y' && c!='z' && c!='w' && (type->IsEquivalentTo(Type::vec4Type))) {
+		ReportError::SwizzleOutOfBound(field,base);
+		return Type::errorType;
+	    }
         }
         if(len>4){
             ReportError::OversizedVector(field, base);
