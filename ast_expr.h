@@ -25,9 +25,9 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
+    virtual Type *CheckExpr() {return NULL;}
 
-    virtual Type* CheckExpr();
-
+    
 
 
     friend std::ostream& operator<< (std::ostream& stream, Expr * expr) {
@@ -60,6 +60,8 @@ class IntConstant : public Expr
     IntConstant(yyltype loc, int val);
     const char *GetPrintNameForNode() { return "IntConstant"; }
     void PrintChildren(int indentLevel);
+
+    virtual Type *CheckExpr() {return Type::intType;}
 };
 
 class FloatConstant: public Expr 
@@ -71,6 +73,8 @@ class FloatConstant: public Expr
     FloatConstant(yyltype loc, double val);
     const char *GetPrintNameForNode() { return "FloatConstant"; }
     void PrintChildren(int indentLevel);
+
+    virtual Type *CheckExpr() {return Type::floatType;}
 };
 
 class BoolConstant : public Expr 
@@ -82,6 +86,8 @@ class BoolConstant : public Expr
     BoolConstant(yyltype loc, bool val);
     const char *GetPrintNameForNode() { return "BoolConstant"; }
     void PrintChildren(int indentLevel);
+
+    virtual Type *CheckExpr() {return Type::boolType;}
 };
 
 class VarExpr : public Expr

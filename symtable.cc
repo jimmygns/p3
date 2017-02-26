@@ -32,10 +32,11 @@ Symbol *ScopedTable::find(const char *name){
 		return NULL;
 	}
 
-	return &(this->symbols.find(name)->second);
+	return &(it->second);
 }
 
 SymbolTable::SymbolTable(){
+	this->push();
 	this->return_type = NULL;
 
 }
@@ -78,13 +79,15 @@ void SymbolTable::remove(Symbol &sym){
 }
 
 Symbol *SymbolTable::find(const char *name){
+	if(this->tables.empty())
+		return NULL;
 	Symbol *sym = this->tables.back()->find(name);
 	if(sym){
 		sym->someInfo=0;
 	    return sym;
 	}
 	for(vector<ScopedTable*>::iterator it = this->tables.begin(); it != this->tables.end(); ++it){
-	    sym = *it->find(name);
+	    sym = (*it)->find(name);
 	    if(sym){
 			sym->someInfo=1;
 			return sym;

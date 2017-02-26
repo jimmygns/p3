@@ -47,6 +47,12 @@ void VarDecl::Check(){
         ReportError::DeclConflict(this, sym->decl);
         Node::symtab->remove(*sym);
     }
+    if(this->assignTo){
+        Type *actual_type = this->assignTo->CheckExpr();
+        if(!actual_type->IsEquivalentTo(this->type)){
+            ReportError::InvalidInitialization(this->GetIdentifier(), this->type, actual_type);
+        }
+    }
     sym = new Symbol(this->GetIdentifier()->GetName(), this, E_VarDecl);
     Node::symtab->insert(*sym);
     

@@ -325,6 +325,11 @@ Type *ArrayAccess::CheckExpr() {
     }
     return b_type->GetElemType();
 }
+
+void ArrayAccess::Check(){
+    this->CheckExpr();
+}
+
 void ArrayAccess::PrintChildren(int indentLevel) {
     base->Print(indentLevel+1);
     subscript->Print(indentLevel+1, "(subscript) ");

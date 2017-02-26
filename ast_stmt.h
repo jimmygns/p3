@@ -42,6 +42,8 @@ class Stmt : public Node
      Stmt(yyltype loc) : Node(loc) {}
 
      virtual void Check();
+
+     
 };
 
 class StmtBlock : public Stmt 

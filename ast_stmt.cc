@@ -42,6 +42,10 @@ void Program::Check() {
     }
 }
 
+void Stmt::Check(){
+
+}
+
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
