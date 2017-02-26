@@ -1,0 +1,19 @@
+For this project, we dealt with the semantic analysis portion of the compiler.
+
+Our main strategy in dealing with the semantic analysis portion was to first create a symbol table. 
+
+We first implemented our own symbol table to manage out scopes and report declaration errors. The symbol table would act as the one global symbol table while we have multiple scoped tables to deal with the different scopes. After we dealt with the symbol table file, we went ahead and went to the different ast files to implement a check function so that our compiler would be able to correctly read and print the errors.
+
+In our separate check functions, we updated the symbol table and declared our different errors that were listed for us in the errors file.
+
+We first dealt with the errors related to all of our declarations in the ast_decl.cc file. If we added a check in the .cc file, we would update the .h file accordingly.
+
+After we implemented our declaration errors, we went ahead and did the same for our expressions file. The expressions file was a bit different in that we needed to add certain things into the file other than just the errors. For example, we added on the Logical and Equality constructors because it wasn't already there prior. We had to change a few lines in parser.y to change the ArithmeticExpr constructor to the appropriate type of constructor and then handled the corresponding semantic check in ast_expr.cc.
+
+In the case of ast_expr.cc, we had to also make a CheckExpr function for the constructors so that we would know what types each situation returned. Using that CheckExpr, we implemented the Check function for all the necessary constructors.
+
+After, we went ahead to the ast_stmt file (seeing that the ast_type files did not require any modification) to deal with the different statement errors.
+
+Upon finishing all our implementation, we used the public_sample tests to compare the results we got to the given p3exe executable file. If something segfaulted or did/didn't give the wrong errors, we would go back and try to debug it. After all of the sample tests passed, we tried to make our own edge cases to make sure each of the errors were working properly.
+
+After making sure all of the tests passed, we tried to add the extra credit cases in last minute to the Arithmatic Expression constructor.  

@@ -112,6 +112,34 @@ Type* ArithmeticExpr::CheckExpr(){
             return Type::errorType;
         }
 
+	if((l_type->IsConvertibleTo(Type::floatType) && r_type->IsConvertibleTo(Type::vec2Type)) || (r_type->IsConvertibleTo(Type::floatType) && l_type->IsConvertibleTo(Type::vec2Type))) {
+	    return Type::vec2Type;
+	}
+	if((l_type->IsConvertibleTo(Type::floatType) && r_type->IsConvertibleTo(Type::vec3Type)) || (r_type->IsConvertibleTo(Type::floatType) && l_type->IsConvertibleTo(Type::vec3Type))) {
+	    return Type::vec3Type;
+	}
+	if((l_type->IsConvertibleTo(Type::floatType) && r_type->IsConvertibleTo(Type::vec4Type)) || (r_type->IsConvertibleTo(Type::floatType) && l_type->IsConvertibleTo(Type::vec4Type))) {
+	    return Type::vec4Type;
+	}
+	if((l_type->IsConvertibleTo(Type::floatType) && r_type->IsConvertibleTo(Type::mat2Type)) || (r_type->IsConvertibleTo(Type::floatType) && l_type->IsConvertibleTo(Type::mat2Type))) {
+	    return Type::mat2Type;
+	}
+	if((l_type->IsConvertibleTo(Type::floatType) && r_type->IsConvertibleTo(Type::mat3Type)) || (r_type->IsConvertibleTo(Type::floatType) && l_type->IsConvertibleTo(Type::mat3Type))) {
+	    return Type::mat3Type;
+	}
+	if((l_type->IsConvertibleTo(Type::floatType) && r_type->IsConvertibleTo(Type::mat4Type)) || (r_type->IsConvertibleTo(Type::floatType) && l_type->IsConvertibleTo(Type::mat4Type))) {
+	    return Type::mat4Type;
+	}
+	if((l_type->IsConvertibleTo(Type::mat2Type) && r_type->IsConvertibleTo(Type::vec2Type)) || (r_type->IsConvertibleTo(Type::mat2Type) && l_type->IsConvertibleTo(Type::vec2Type))) {
+	    return Type::mat2Type;
+	}
+	if((l_type->IsConvertibleTo(Type::mat3Type) && r_type->IsConvertibleTo(Type::vec3Type)) || (r_type->IsConvertibleTo(Type::mat3Type) && l_type->IsConvertibleTo(Type::vec3Type))) {
+	    return Type::mat3Type;
+	}
+	if((l_type->IsConvertibleTo(Type::mat4Type) && r_type->IsConvertibleTo(Type::vec4Type)) || (r_type->IsConvertibleTo(Type::mat4Type) && l_type->IsConvertibleTo(Type::vec4Type))) {
+	    return Type::mat4Type;
+	}
+
         if (!l_type->IsEquivalentTo(r_type)){
             ReportError::IncompatibleOperands(op, l_type, r_type);
             return Type::errorType;
