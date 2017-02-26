@@ -102,9 +102,15 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 
 void ForStmt::Check() {
     Node::symtab->push();
+    Node::stack->push(this);
 
+    //Type *init_type = init->CheckExpr();
     init->Check();
-    test->Check();
+
+    Type *test_type = test->CheckExpr();
+    if(!test_type->IsEquivalentTo(Type::boolType)){
+      ReportError::TestNotBoolean(test);
+    }
 
    
     if(step != NULL) {
@@ -112,7 +118,7 @@ void ForStmt::Check() {
     }
 
     body->Check();
-
+    Node::stack->pop();
     Node::symtab->pop();
 }
 
@@ -140,12 +146,16 @@ void WhileStmt::PrintChildren(int indentLevel) {
 }
 
 void WhileStmt::Check() {
-    Node::symtab->push()
+    Node::symtab->push();
+    Node::stack->push(this);
     
-    test->Check();
-
+    Type *test_type = test->CheckExpr();
+    if(!test_type.IsEquivalentTo(Type::boolType)){
+      ReportError::TestNotBoolean(test);
+    }
     body->Check();
 
+    Node::stack->pop();
     Node::symtab->pop();
 }
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
@@ -161,7 +171,30 @@ void IfStmt::PrintChildren(int indentLevel) {
 }
 
 void IfStmt::Check() {
-    //TODO
+    Node::symtab->push();
+    
+    Type *test_type = test->CheckExpr();
+    if(!test_type.IsEquivalentTo(Type::boolType)){
+      ReportError::TestNotBoolean(test);
+    }
+    body->Check();
+    if(elseBody){
+      elseBody->Check();
+    }
+
+    Node::symtab->pop();
+}
+
+void BreakStmt::Check(){
+  if(!Node::stack->insideLoop()&&!Node::stack->insideSwitch()){
+    ReportError::BreakOutsideLoop(this);
+  }
+}
+
+void ContinueStmt::Check(){
+  if(!Node::stack->insideLoop()){
+    ReportError::ContinueOutsideLoop(this);
+  }
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
@@ -175,7 +208,15 @@ void ReturnStmt::PrintChildren(int indentLevel) {
 }
 
 void ReturnStmt::Check() {
-    //TODO
+    Type *expected_return = Node::symtab->getType();
+    Type *actual_return = Type::voidType;
+    if(this->expr){
+      actual_return = this->expr->CheckExpr();
+    }
+    if(!expected_return->IsEquivalentTo(actual_return)){
+        ReportError::ReturnMismatch(this, actual_return, expected_return);
+    }
+
 }
 
 SwitchLabel::SwitchLabel(Expr *l, Stmt *s) {
@@ -207,5 +248,33 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     if (expr) expr->Print(indentLevel+1);
     if (cases) cases->PrintAll(indentLevel+1);
     if (def) def->Print(indentLevel+1);
+}
+
+void Case::Check(){
+  this->label->Check();
+  this->stmt->Check();
+}
+
+void Default::Check(){
+  this->stmt->Check();
+}
+
+void SwitchStmt::Check(){
+  Node::symtab->push();
+  Node::stack->push(this);
+
+  this->expr->Check();
+  if ( cases->NumElements() > 0 ) {
+      for ( int i = 0; i < cases->NumElements(); ++i ) {
+        Stmt *st = cases->Nth(i);
+        st->Check();
+      }
+  }
+  if(this->def)
+    this->def->Check();
+
+
+  Node::stack->pop();
+  Node::symtab->pop();
 }
 

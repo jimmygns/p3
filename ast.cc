@@ -12,6 +12,7 @@
 
 SymbolTable *Node::symtab = new SymbolTable;
 bool Node::isFnDecl = false;
+MyStack *Node::stack = new MyStack;
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);

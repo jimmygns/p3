@@ -27,6 +27,7 @@ class Expr : public Stmt
     Expr() : Stmt() {}
 
     virtual Type* CheckExpr();
+    virtual Type* Check();
 
 
 

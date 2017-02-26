@@ -7,15 +7,14 @@
 using namespace std;
 
 ScopedTable::ScopedTable(){
+	this->type = NULL;
 }
 
 ScopedTable::~ScopedTable(){
 	this->symbols.clear();
 }
 
-void ScopedTable::addReturnType(Type *t){
-	this->type = t;
-}
+
 
 void ScopedTable::insert(Symbol &sym){
 
@@ -38,6 +37,7 @@ Symbol *ScopedTable::find(const char *name){
 }
 
 SymbolTable::SymbolTable(){
+	this->return_type = NULL;
 
 }
 
@@ -48,12 +48,14 @@ SymbolTable::~SymbolTable(){
 }
 
 void SymbolTable::setReturnType(Type *t){
-	this->tables.back()->addReturnType(t);
+	this->return_type = t;
 }
 
 
 Type *SymbolTable::getType(){
-	return this->tables.back()->getType();
+
+	
+	return this->return_type;
 }
 
 
@@ -79,13 +81,14 @@ void SymbolTable::remove(Symbol &sym){
 Symbol *SymbolTable::find(const char *name){
 	Symbol *sym = this->tables.back()->find(name);
 	if(sym){
+		sym->someinfo=0;
 	    return sym;
 	}
 	for(vector<ScopedTable*>::iterator it = this->tables.begin(); it != this->tables.end(); ++it){
 	    sym = *it->find(name);
 	    if(sym){
-		sym->someinfo=1;
-		return sym;
+			sym->someinfo=1;
+			return sym;
 	    }
 		
 	}

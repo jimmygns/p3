@@ -53,7 +53,7 @@ typedef map<const char *, Symbol, lessStr>::iterator SymbolIterator;
 
 class ScopedTable {
   map<const char *, Symbol, lessStr> symbols;
-  Type *type;
+  
   
 
   public:
@@ -62,10 +62,9 @@ class ScopedTable {
 
     void insert(Symbol &sym); 
     void remove(Symbol &sym);
-    void addReturnType(Type* type);
     
 
-    Type *getType(){ return type;}
+    
     
     Symbol *find(const char *name);
 
@@ -73,6 +72,7 @@ class ScopedTable {
    
 class SymbolTable {
   std::vector<ScopedTable *> tables;
+  Type *return_type;
  
   public:
     SymbolTable();
@@ -95,6 +95,8 @@ class MyStack {
     vector<Stmt *> stmtStack;
 
   public:
+    MyStack(){}
+    ~MyStack(){}
     void push(Stmt *s) { stmtStack.push_back(s); }
     void pop()         { if (stmtStack.size() > 0 ) stmtStack.pop_back(); }
     bool insideLoop();

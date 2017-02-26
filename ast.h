@@ -55,6 +55,7 @@ class Node  {
   public:
     static SymbolTable *symtab; 
     static bool isFnDecl;
+    static MyStack *stack;
 
 
     Node(yyltype loc);

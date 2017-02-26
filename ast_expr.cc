@@ -47,7 +47,8 @@ Type *VarExpr::CheckExpr() {
         ReportError::IdentifierNotDeclared(this->GetIdentifier(), LookingForVariable);
         return Type::errorType;
     }
-    return new NamedType(this->GetIdentifier());
+    VarDecl *vd = dynamic_cast<VarDecl*>(sym->decl);
+    return vd->GetType();
 
     
 }
@@ -441,9 +442,9 @@ Type* Call::CheckExpr() {
         for(int i = 0; i < actuals->NumElements(); i++) {
 
             Type *actual = actuals->Nth(i)->CheckExpr();
-	    if(actual->IsError()){
-		return Type::errorType;
-	    }
+            if(actual->IsError()){
+              return Type::errorType;
+            }
 
             Type *expected = fndecl->GetFormals()->Nth(i)->GetType();
 

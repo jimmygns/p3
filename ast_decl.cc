@@ -43,7 +43,7 @@ void VarDecl::PrintChildren(int indentLevel) {
 
 void VarDecl::Check(){
     Symbol *sym = Node::symtab->find(this->GetIdentifier()->GetName());
-    if(sym){
+    if(sym&&sym->someInfo==0){
         ReportError::DeclConflict(this, sym->decl);
         Node::symtab->remove(*sym);
     }
@@ -81,7 +81,7 @@ void FnDecl::PrintChildren(int indentLevel) {
 
 void FnDecl::Check(){
     Symbol *sym = Node::symtab->find(this->GetIdentifier()->GetName());
-    if(sym){
+    if(sym&&sym->someInfo==0){
         ReportError::DeclConflict(this, sym->decl);
         Node::symtab->remove(*sym);
     }
@@ -98,7 +98,17 @@ void FnDecl::Check(){
         }
     }
     StmtBlock* body_stmt = dynamic_cast<StmtBlock *>(this->GetBody());
+
+    
+
     body_stmt->Check();
+
+    
+    Type *returned = Node::symtab->getType(); 
+    if(!returned->IsEquivalentTo(Type::voidType)){
+        ReportError::ReturnMissing(this);
+
+    }
     Node::symtab->pop();
 
     
