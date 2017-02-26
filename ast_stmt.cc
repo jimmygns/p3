@@ -217,9 +217,12 @@ void ReturnStmt::Check() {
     if(this->expr){
       actual_return = this->expr->CheckExpr();
     }
-    if(!expected_return->IsEquivalentTo(actual_return)){
+    if(actual_return->IsError()){
+    }
+    else if(!expected_return->IsEquivalentTo(actual_return)){
         ReportError::ReturnMismatch(this, actual_return, expected_return);
     }
+    Node::symtab->setReturnType(Type::voidType);
 
 }
 

@@ -1,5 +1,11 @@
 
-*** Error line 8.
+*** Error line 9.
+  x();
+  ^
+*** 'x' is not a function.
+
+
+*** Error line 10.
   return foo(1);
          ^^^
 *** Extra arguments given to function 'foo': expected 0, given 1

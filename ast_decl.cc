@@ -49,6 +49,8 @@ void VarDecl::Check(){
     }
     if(this->assignTo){
         Type *actual_type = this->assignTo->CheckExpr();
+	if(actual_type->IsError())
+	    return;
         if(!actual_type->IsEquivalentTo(this->type)){
             ReportError::InvalidInitialization(this->GetIdentifier(), this->type, actual_type);
         }

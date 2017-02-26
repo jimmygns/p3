@@ -258,7 +258,7 @@ void AssignExpr::Check(){
 }
 
 Type *PostfixExpr::CheckExpr(){
-    Type *r_type = right->CheckExpr();
+    Type *r_type = left->CheckExpr();
     if(r_type->IsError()){
         return Type::errorType;
     }
