@@ -7,7 +7,6 @@
 using namespace std;
 
 ScopedTable::ScopedTable(){
-	this->type = NULL;
 }
 
 ScopedTable::~ScopedTable(){
@@ -81,13 +80,13 @@ void SymbolTable::remove(Symbol &sym){
 Symbol *SymbolTable::find(const char *name){
 	Symbol *sym = this->tables.back()->find(name);
 	if(sym){
-		sym->someinfo=0;
+		sym->someInfo=0;
 	    return sym;
 	}
 	for(vector<ScopedTable*>::iterator it = this->tables.begin(); it != this->tables.end(); ++it){
 	    sym = *it->find(name);
 	    if(sym){
-			sym->someinfo=1;
+			sym->someInfo=1;
 			return sym;
 	    }
 		

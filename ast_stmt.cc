@@ -150,7 +150,7 @@ void WhileStmt::Check() {
     Node::stack->push(this);
     
     Type *test_type = test->CheckExpr();
-    if(!test_type.IsEquivalentTo(Type::boolType)){
+    if(!test_type->IsEquivalentTo(Type::boolType)){
       ReportError::TestNotBoolean(test);
     }
     body->Check();
@@ -174,7 +174,7 @@ void IfStmt::Check() {
     Node::symtab->push();
     
     Type *test_type = test->CheckExpr();
-    if(!test_type.IsEquivalentTo(Type::boolType)){
+    if(!test_type->IsEquivalentTo(Type::boolType)){
       ReportError::TestNotBoolean(test);
     }
     body->Check();
